@@ -1,0 +1,17 @@
+{
+  "name": "Zaimen",
+  "short_name": "Zaimen",
+  "description": "A shared wishlist for two",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FBF4EC",
+  "theme_color": "#C45C6A",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
