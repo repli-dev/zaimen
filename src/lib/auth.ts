@@ -26,6 +26,9 @@ export function verifyPassword(password: string, salt: string, hash: string) {
 
 async function getSecret() {
   if (process.env.SESSION_SECRET) return process.env.SESSION_SECRET;
+  if (process.env.VERCEL) {
+    throw new Error("SESSION_SECRET env var is required on Vercel.");
+  }
   const secretPath = path.join(process.cwd(), "data", "session-secret");
   try {
     return (await readFile(secretPath, "utf8")).trim();

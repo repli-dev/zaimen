@@ -7,7 +7,11 @@ import { HeartMark } from "@/components/Icons";
 import { api } from "@/lib/client";
 import type { Me } from "@/lib/types";
 
-type Status = { configured: boolean; signedIn: boolean };
+type Status = {
+  configured: boolean;
+  signedIn: boolean;
+  hostingIssue?: "NO_DATABASE" | "NO_SESSION_SECRET" | null;
+};
 
 export default function Home() {
   const [status, setStatus] = useState<Status | null>(null);
@@ -42,6 +46,7 @@ export default function Home() {
     return (
       <WelcomeGate
         configured={status.configured}
+        hostingIssue={status.hostingIssue}
         onSignedIn={() => {
           refresh().catch(() => undefined);
         }}

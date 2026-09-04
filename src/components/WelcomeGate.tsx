@@ -8,9 +8,11 @@ type PartnerOption = { id: string; name: string };
 
 export function WelcomeGate({
   configured,
+  hostingIssue,
   onSignedIn,
 }: {
   configured: boolean;
+  hostingIssue?: "NO_DATABASE" | "NO_SESSION_SECRET" | null;
   onSignedIn: () => void;
 }) {
   const [mode, setMode] = useState<"welcome" | "setup" | "login">(
@@ -34,7 +36,9 @@ export function WelcomeGate({
         </p>
       </header>
 
-      {mode === "welcome" && (
+      {hostingIssue ? <HostingHelp issue={hostingIssue} /> : null}
+
+      {!hostingIssue && mode === "welcome" && (
         <div className="fade-in mt-auto space-y-3">
           <button
             type="button"
@@ -53,14 +57,14 @@ export function WelcomeGate({
         </div>
       )}
 
-      {mode === "setup" && (
+      {!hostingIssue && mode === "setup" && (
         <SetupForm
           onBack={() => setMode(configured ? "login" : "welcome")}
           onSignedIn={onSignedIn}
         />
       )}
 
-      {mode === "login" && (
+      {!hostingIssue && mode === "login" && (
         <LoginForm
           onBack={() => setMode(configured ? "login" : "welcome")}
           showBack={!configured}
@@ -68,6 +72,33 @@ export function WelcomeGate({
           configured={configured}
           onSignedIn={onSignedIn}
         />
+      )}
+    </div>
+  );
+}
+
+function HostingHelp({
+  issue,
+}: {
+  issue: "NO_DATABASE" | "NO_SESSION_SECRET";
+}) {
+  return (
+    <div className="paper-card fade-in rounded-3xl p-5 text-left">
+      <h2 className="font-display text-2xl font-semibold">One more step</h2>
+      {issue === "NO_DATABASE" ? (
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          Vercel can’t keep wishlists in a local folder. In your Vercel project,
+          open <span className="font-bold text-ink">Storage</span> →{" "}
+          <span className="font-bold text-ink">Create Database</span> →{" "}
+          <span className="font-bold text-ink">Neon</span>, connect it, then
+          redeploy.
+        </p>
+      ) : (
+        <p className="mt-2 text-sm leading-relaxed text-muted">
+          Add a <span className="font-bold text-ink">SESSION_SECRET</span>{" "}
+          environment variable in Vercel — any long random string — then
+          redeploy.
+        </p>
       )}
     </div>
   );

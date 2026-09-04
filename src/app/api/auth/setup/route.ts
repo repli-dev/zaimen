@@ -1,56 +1,53 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { hashPassword, setSessionCookie } from "@/lib/auth";
-import { mutateStore } from "@/lib/store";
+import { jsonError, createCouple } from "@/lib/store";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as {
-    myName?: string;
-    partnerName?: string;
-    password?: string;
-  };
+  try {
+    const body = (await request.json()) as {
+      myName?: string;
+      partnerName?: string;
+      password?: string;
+    };
 
-  const myName = body.myName?.trim() ?? "";
-  const partnerName = body.partnerName?.trim() ?? "";
-  const password = body.password ?? "";
+    const myName = body.myName?.trim() ?? "";
+    const partnerName = body.partnerName?.trim() ?? "";
+    const password = body.password ?? "";
 
-  if (myName.length < 1 || partnerName.length < 1) {
-    return NextResponse.json(
-      { error: "Both of you need a name." },
-      { status: 400 },
-    );
-  }
-  if (password.length < 4) {
-    return NextResponse.json(
-      { error: "Pick a shared password with at least 4 characters." },
-      { status: 400 },
-    );
-  }
-
-  const meId = randomUUID();
-
-  const result = await mutateStore(async (store) => {
-    if (store.couple) {
-      return { error: "Your couple space is already set up. Sign in instead." };
+    if (myName.length < 1 || partnerName.length < 1) {
+      return NextResponse.json(
+        { error: "Both of you need a name." },
+        { status: 400 },
+      );
     }
+    if (password.length < 4) {
+      return NextResponse.json(
+        { error: "Pick a shared password with at least 4 characters." },
+        { status: 400 },
+      );
+    }
+
+    const meId = randomUUID();
     const { salt, hash } = hashPassword(password);
-    store.couple = {
+    const result = await createCouple({
       salt,
       passwordHash: hash,
       partners: [
         { id: meId, name: myName },
         { id: randomUUID(), name: partnerName },
       ],
-    };
-    return { ok: true as const };
-  });
+    });
 
-  if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: 409 });
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 409 });
+    }
+
+    await setSessionCookie({ partnerId: meId });
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return jsonError(error);
   }
-
-  await setSessionCookie({ partnerId: meId });
-  return NextResponse.json({ ok: true });
 }
