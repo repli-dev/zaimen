@@ -178,7 +178,7 @@ function SetupForm({
           className={inputClass}
           value={partnerName}
           onChange={(e) => setPartnerName(e.target.value)}
-          placeholder="e.g. Sara"
+          placeholder="e.g. Imen"
           required
         />
       </Field>
